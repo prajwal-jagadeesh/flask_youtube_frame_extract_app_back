@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Processing</title>
+    <style>
+        #progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 20px 0;
+            height: 30px;
+            position: relative;
+        }
+        #progress-bar {
+            width: 0;
+            height: 100%;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            border-radius: 5px;
+        }
+        #status {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Processing</h1>
+    <form id="video-form" action="/process" method="post">
+        <label for="url">YouTube URL:</label>
+        <input type="text" id="url" name="url" required>
+        <button type="submit">Process Video</button>
+    </form>
+    
+    <div id="progress-container">
+        <div id="progress-bar">0%</div>
+    </div>
+    
+    <div id="status"></div>
+
+    <script>
+        document.getElementById('video-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            let url = document.getElementById('url').value;
+            let formData = new FormData();
+            formData.append('url', url);
+
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.text())
+              .then(data => {
+                  console.log('Processing started');
+              });
+
+            // Setup SSE connection
+            let eventSource = new EventSource('/progress');
+            eventSource.onmessage = function(event) {
+                let data = JSON.parse(event.data);
+                if (data.status === 'Completed') {
+                    document.getElementById('status').innerHTML = `Processing completed. <a href="/download/${data.file}">Download your file</a>`;
+                    eventSource.close();
+                } else if (data.status === 'Failed') {
+                    document.getElementById('status').innerText = 'Processing failed.';
+                    eventSource.close();
+                } else {
+                    let progress = data.progress || 0;
+                    document.getElementById('progress-bar').style.width = `${progress}%`;
+                    document.getElementById('progress-bar').innerText = `${progress}%`;
+                    document.getElementById('status').innerText = `Current step: ${data.step}`;
+                }
+            };
+
+            eventSource.onerror = function(error) {
+                console.log('SSE error:', error);
+                eventSource.close();
+            };
+        });
+    </script>
+</body>
+</html>
+
