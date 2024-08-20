@@ -32,12 +32,12 @@ def extract_frames(video_path, output_folder, interval_ms):
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print("Error: Could not open video.")
-        return
+        return False
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps <= 0:
         print("Error: Invalid FPS value.")
-        return
+        return False
 
     interval_frames = int(fps * (interval_ms / 1000.0))
     frame_count = 0
@@ -60,6 +60,7 @@ def extract_frames(video_path, output_folder, interval_ms):
 
     cap.release()
     print(f"Finished extracting frames. Total frames saved: {saved_frame_count}")
+    return True
 
 def download_youtube_video(url, output_path):
     try:
@@ -150,29 +151,59 @@ def process_video():
     youtube_url = request.form['url']
     download_path = '/home/een/Downloads/YT-Downloads/AV_files'
     frame_download_path = '/home/een/Downloads/YT-Downloads/Extracts'
+    sanitized_title = None
+    video_path = None
 
-    video_path, sanitized_title = download_youtube_video(youtube_url, download_path)
-    if video_path and os.path.exists(video_path):
+    try:
+        # Download video
+        video_path, sanitized_title = download_youtube_video(youtube_url, download_path)
+        if not video_path or not os.path.exists(video_path):
+            processing_status['status'] = 'Failed'
+            processing_status['step'] = 'Downloading Video'
+            return "Video download failed or file not found."
+
         processing_status['step'] = 'Extracting Frames'
         output_folder = os.path.join(frame_download_path, sanitized_title)
-        extract_frames(video_path, output_folder, 1000)
+
+        # Extract frames
+        if not extract_frames(video_path, output_folder, 1000):
+            processing_status['status'] = 'Failed'
+            processing_status['step'] = 'Extracting Frames'
+            return "Frame extraction failed."
+
         rename_files_in_folder(output_folder)
+
+        # Delete video file
+        os.remove(video_path)
+
         processing_status['step'] = 'Creating ZIP Archive'
         zip_folder(output_folder)
+
+        # Delete frames folder after zipping
+        shutil.rmtree(output_folder)
+
         processing_status['step'] = 'Extracting Audio'
         audio_path = extract_audio(youtube_url, download_path, sanitized_title)
+
+        # Delete audio file
         if audio_path and os.path.exists(audio_path):
-            processing_status['status'] = 'Completed'
-            processing_status['file'] = f"{sanitized_title}.zip"
-            # URL encode the filename for safe URL usage
-            safe_filename = urllib.parse.quote(processing_status['file'])
-            return render_template('status.html', zip_filename=safe_filename)
+            os.remove(audio_path)
         else:
             processing_status['status'] = 'Failed'
+            processing_status['step'] = 'Extracting Audio'
             return "Audio extraction failed."
-    else:
+
+        processing_status['status'] = 'Completed'
+        processing_status['file'] = f"{sanitized_title}.zip"
+        # URL encode the filename for safe URL usage
+        safe_filename = urllib.parse.quote(processing_status['file'])
+        return render_template('status.html', zip_filename=safe_filename)
+
+    except Exception as e:
         processing_status['status'] = 'Failed'
-        return "Video download failed or file not found."
+        processing_status['step'] = 'Error'
+        print(f"Unexpected error: {e}")
+        return "An unexpected error occurred."
 
 @app.route('/status')
 def status():
@@ -198,4 +229,3 @@ def download_file(filename):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
