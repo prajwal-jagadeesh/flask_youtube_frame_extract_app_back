@@ -3,44 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Processing</title>
+    <title>YouTube Frame Extract</title>
     <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #ffffff;
+            background: url('https://img.freepik.com/free-photo/pile-3d-play-button-logos_1379-880.jpg?ga=GA1.1.1995025016.1724146193&semt=ais_hybrid') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+            animation: fadeIn 1s ease-in-out;
+            z-index: 1;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #f13535;
+            animation: slideInFromLeft 0.5s ease-in-out;
+        }
+
+        label {
+            display: block;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-align: left;
+            color: #d3d3d3;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #3d3d3d;
+            color: #ffffff;
+            font-size: 1em;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 25px; /* More rounded corners */
+            background: linear-gradient(135deg, #ff7e5f, #feb47b); /* Gradient background */
+            color: #ffffff;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #feb47b, #ff7e5f); /* Reversed gradient on hover */
+            transform: translateY(-3px); /* Lift effect */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
         #progress-container {
             width: 100%;
-            background-color: #f3f3f3;
-            border: 1px solid #ccc;
+            background-color: #444;
             border-radius: 5px;
-            margin: 20px 0;
             height: 30px;
+            margin-top: 20px;
+            overflow: hidden;
             position: relative;
         }
+
         #progress-bar {
             width: 0;
             height: 100%;
-            background-color: #4caf50;
+            background: linear-gradient(90deg, #f13535, #ff6347);
             text-align: center;
             line-height: 30px;
             color: white;
             border-radius: 5px;
+            transition: width 0.3s ease-in-out;
         }
+
         #status {
-            margin: 20px 0;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInFromLeft {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <h1>Video Processing</h1>
-    <form id="video-form" action="/process" method="post">
-        <label for="url">YouTube URL:</label>
-        <input type="text" id="url" name="url" required>
-        <button type="submit">Process Video</button>
-    </form>
-    
-    <div id="progress-container">
-        <div id="progress-bar">0%</div>
+    <div class="overlay"></div>
+    <div class="container">
+        <h1>YouTube Frame Extract</h1>
+        <form id="video-form" action="/process" method="post">
+            <label for="url">Paste YouTube URL:</label>
+            <input type="text" id="url" name="url" required>
+            <button type="submit">Extract</button>
+        </form>
+        <div id="progress-container">
+            <div id="progress-bar">0%</div>
+        </div>
+        <div id="status"></div>
     </div>
-    
-    <div id="status"></div>
 
     <script>
         document.getElementById('video-form').addEventListener('submit', function(event) {
@@ -57,7 +160,6 @@
                   console.log('Processing started');
               });
 
-            // Setup SSE connection
             let eventSource = new EventSource('/progress');
             eventSource.onmessage = function(event) {
                 let data = JSON.parse(event.data);
@@ -83,4 +185,3 @@
     </script>
 </body>
 </html>
-
