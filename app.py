@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, send_file, jsonify, Response
-from werkzeug.utils import safe_join
 import os
-import urllib.parse
 import re
 import cv2
 import yt_dlp as youtube_dl
 import shutil
 import json
 import time
+import logging
+import urllib.parse  # Import this for URL encoding
+from flask import Flask, render_template, request, send_file, jsonify, Response
+from werkzeug.utils import safe_join
 
 app = Flask(__name__)
 
@@ -59,7 +60,7 @@ def extract_frames(video_path, output_folder, interval_ms):
         processing_status['progress'] = int((frame_count / total_frames) * 100)
 
     cap.release()
-    print(f"Finished extracting frames. Total frames saved: {saved_frame_count}")
+    logging.info(f"Finished extracting frames. Total frames saved: {saved_frame_count}")
     return True
 
 def download_youtube_video(url, output_path):
@@ -82,47 +83,22 @@ def download_youtube_video(url, output_path):
             video_path = os.path.join(output_path, f"{sanitized_title}.mp4")
             return video_path, sanitized_title
     except Exception as e:
-        print(f"Error downloading video: {e}")
+        logging.error(f"Error downloading video: {e}")
         return None, None
-
-def extract_audio(url, output_path, sanitized_title):
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': os.path.join(output_path, f'{sanitized_title}.%(ext)s'),
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-        'noplaylist': True,
-    }
-    try:
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-            audio_path = os.path.join(output_path, f"{sanitized_title}.mp3")
-            if os.path.exists(audio_path):
-                print(f"Audio extracted to: {audio_path}")
-                return audio_path
-            else:
-                print(f"Error: File not found at {audio_path}")
-                return None
-    except Exception as e:
-        print(f"Error extracting audio: {e}")
-        return None
 
 def zip_folder(folder_path):
     zip_filename = f"{folder_path}.zip"
     shutil.make_archive(folder_path, 'zip', folder_path)
-    print(f"Created zip archive: {zip_filename}")
+    logging.info(f"Created zip archive: {zip_filename}")
 
 def rename_files_in_folder(folder_path):
     if not os.path.isdir(folder_path):
-        print(f"Error: The folder {folder_path} does not exist.")
+        logging.error(f"Error: The folder {folder_path} does not exist.")
         return
     
     parent_folder_name = os.path.basename(folder_path)
     if not parent_folder_name:
-        print("Error: The folder name is empty.")
+        logging.error("Error: The folder name is empty.")
         return
 
     prefix = ''.join([word[0] for word in parent_folder_name.split()])
@@ -136,7 +112,7 @@ def rename_files_in_folder(folder_path):
         new_file_path = os.path.join(folder_path, new_file_name)
         os.rename(old_file_path, new_file_path)
 
-    print(f"Files in {folder_path} renamed successfully.")
+    logging.info(f"Files in {folder_path} renamed successfully.")
 
 @app.route('/')
 def home():
@@ -163,6 +139,7 @@ def process_video():
             return "Video download failed or file not found."
 
         processing_status['step'] = 'Extracting Frames'
+        processing_status['progress'] = 0
         output_folder = os.path.join(frame_download_path, sanitized_title)
 
         # Extract frames
@@ -177,32 +154,23 @@ def process_video():
         os.remove(video_path)
 
         processing_status['step'] = 'Creating ZIP Archive'
+        processing_status['progress'] = 0
         zip_folder(output_folder)
 
         # Delete frames folder after zipping
         shutil.rmtree(output_folder)
 
-        processing_status['step'] = 'Extracting Audio'
-        audio_path = extract_audio(youtube_url, download_path, sanitized_title)
-
-        # Delete audio file
-        if audio_path and os.path.exists(audio_path):
-            os.remove(audio_path)
-        else:
-            processing_status['status'] = 'Failed'
-            processing_status['step'] = 'Extracting Audio'
-            return "Audio extraction failed."
-
         processing_status['status'] = 'Completed'
         processing_status['file'] = f"{sanitized_title}.zip"
+        
         # URL encode the filename for safe URL usage
-        safe_filename = urllib.parse.quote(processing_status['file'])
+        safe_filename = urllib.parse.quote(processing_status['file'])  # Ensure this line is correct
         return render_template('status.html', zip_filename=safe_filename)
 
     except Exception as e:
         processing_status['status'] = 'Failed'
         processing_status['step'] = 'Error'
-        print(f"Unexpected error: {e}")
+        logging.error(f"Unexpected error: {e}")
         return "An unexpected error occurred."
 
 @app.route('/status')
