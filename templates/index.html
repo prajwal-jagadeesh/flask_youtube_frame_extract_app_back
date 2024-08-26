@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Frame Extract</title>
+    <title>🦅EYE-SNARE</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -31,20 +31,22 @@
 
         .container {
             text-align: center;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0);
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0);
             max-width: 500px;
-            width: 100%;
+            width: 90%;
             animation: fadeIn 1s ease-in-out;
             z-index: 1;
         }
 
         h1 {
             font-size: 2.5em;
-            margin-bottom: 20px;
-            color: #f13535;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 50px;
+            color: #feb47b;
             animation: slideInFromLeft 0.5s ease-in-out;
         }
 
@@ -77,8 +79,8 @@
             width: 100%;
             padding: 12px;
             border: none;
-            border-radius: 25px; /* More rounded corners */
-            background: linear-gradient(135deg, #ff7e5f, #feb47b); /* Gradient background */
+            border-radius: 25px;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
             color: #ffffff;
             font-size: 1.2em;
             font-weight: bold;
@@ -88,8 +90,8 @@
         }
 
         button:hover {
-            background: linear-gradient(135deg, #feb47b, #ff7e5f); /* Reversed gradient on hover */
-            transform: translateY(-3px); /* Lift effect */
+            background: linear-gradient(135deg, #feb47b, #ff7e5f);
+            transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
@@ -119,6 +121,24 @@
             font-size: 1.1em;
         }
 
+        .loading-spinner {
+            border: 6px solid rgba(0, 0, 0, 0.1);
+            border-top: 6px solid #f13535;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 20px auto;
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 15%;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -128,12 +148,34 @@
             from { transform: translateX(-100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            input[type="text"], button {
+                font-size: 1em;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="overlay"></div>
+    <div class="overlay">
+        <img src="https://www.een.com/wp-content/uploads/2021/03/EEN-logo-440x150-1.png" alt="Logo" class="logo" id="logo">
+        
+    </div>
     <div class="container">
-        <h1>YouTube Frame Extract</h1>
+    <h1>🦅 EYE-SNARE</h1>
         <form id="video-form" action="/process" method="post">
             <label for="url">Paste YouTube URL:</label>
             <input type="text" id="url" name="url" required>
@@ -143,6 +185,7 @@
             <div id="progress-bar">0%</div>
         </div>
         <div id="status"></div>
+        <div class="loading-spinner" id="loading-spinner"></div>
     </div>
 
     <script>
@@ -151,6 +194,9 @@
             let url = document.getElementById('url').value;
             let formData = new FormData();
             formData.append('url', url);
+
+            // Show loading spinner when processing starts
+            document.getElementById('loading-spinner').style.display = 'block';
 
             fetch('/process', {
                 method: 'POST',
@@ -164,10 +210,15 @@
             eventSource.onmessage = function(event) {
                 let data = JSON.parse(event.data);
                 if (data.status === 'Completed') {
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    document.getElementById('progress-bar').style.width = '100%';
+                    document.getElementById('progress-bar').innerText = '100%';
                     document.getElementById('status').innerHTML = `Finished Extraction. <a href="/download/${data.file}">Download your file</a>`;
+                    document.getElementById('logo').style.display = 'block'; // Show logo
                     eventSource.close();
                 } else if (data.status === 'Failed') {
-                    document.getElementById('status').innerText = 'Processing failed.';
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    document.getElementById('status').innerText = 'Processing failed. Please try again or check the URL.';
                     eventSource.close();
                 } else {
                     let progress = data.progress || 0;
@@ -185,3 +236,4 @@
     </script>
 </body>
 </html>
+
