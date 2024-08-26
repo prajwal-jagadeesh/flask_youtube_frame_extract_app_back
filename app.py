@@ -6,7 +6,7 @@ import shutil
 import json
 import time
 import logging
-import urllib.parse  # Import this for URL encoding
+import urllib.parse  # For URL encoding
 from flask import Flask, render_template, request, send_file, jsonify, Response
 from werkzeug.utils import safe_join
 
@@ -22,7 +22,6 @@ processing_status = {
 
 def sanitize_title(title):
     sanitized_title = re.sub(r'[<>:"/\\|?*-]', '', title)
-    sanitized_title = re.sub(r'[|]', '', sanitized_title)
     sanitized_title = re.sub(r'\s+', ' ', sanitized_title).strip()
     return sanitized_title
 
@@ -32,12 +31,12 @@ def extract_frames(video_path, output_folder, interval_ms):
 
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
-        print("Error: Could not open video.")
+        logging.error("Error: Could not open video.")
         return False
 
     fps = cap.get(cv2.CAP_PROP_FPS)
     if fps <= 0:
-        print("Error: Invalid FPS value.")
+        logging.error("Error: Invalid FPS value.")
         return False
 
     interval_frames = int(fps * (interval_ms / 1000.0))
@@ -124,6 +123,7 @@ def process_video():
     processing_status['status'] = 'Processing'
     processing_status['step'] = 'Downloading Video'
     processing_status['progress'] = 0
+
     youtube_url = request.form['url']
     download_path = '/home/een/Downloads/YT-Downloads/AV_files'
     frame_download_path = '/home/een/Downloads/YT-Downloads/Extracts'
@@ -164,7 +164,7 @@ def process_video():
         processing_status['file'] = f"{sanitized_title}.zip"
         
         # URL encode the filename for safe URL usage
-        safe_filename = urllib.parse.quote(processing_status['file'])  # Ensure this line is correct
+        safe_filename = urllib.parse.quote(processing_status['file'])
         return render_template('status.html', zip_filename=safe_filename)
 
     except Exception as e:
@@ -197,4 +197,3 @@ def download_file(filename):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-

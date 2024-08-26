@@ -31,10 +31,10 @@
 
         .container {
             text-align: center;
-            background-color: rgba(0, 0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.8);
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
             max-width: 500px;
             width: 90%;
             animation: fadeIn 1s ease-in-out;
@@ -172,10 +172,9 @@
 <body>
     <div class="overlay">
         <img src="https://www.een.com/wp-content/uploads/2021/03/EEN-logo-440x150-1.png" alt="Logo" class="logo" id="logo">
-        
     </div>
     <div class="container">
-    <h1>🦅 EYE-SNARE</h1>
+        <h1>🦅 EYE-SNARE</h1>
         <form id="video-form" action="/process" method="post">
             <label for="url">Paste YouTube URL:</label>
             <input type="text" id="url" name="url" required>
@@ -213,7 +212,7 @@
                     document.getElementById('loading-spinner').style.display = 'none';
                     document.getElementById('progress-bar').style.width = '100%';
                     document.getElementById('progress-bar').innerText = '100%';
-                    document.getElementById('status').innerHTML = `Finished Extraction. <a href="/download/${data.file}">Download your file</a>`;
+                    document.getElementById('status').innerHTML = `Finished Extraction. <a href="/download/${encodeURIComponent(data.file)}">Download your file</a>`;
                     document.getElementById('logo').style.display = 'block'; // Show logo
                     eventSource.close();
                 } else if (data.status === 'Failed') {
@@ -224,7 +223,7 @@
                     let progress = data.progress || 0;
                     document.getElementById('progress-bar').style.width = `${progress}%`;
                     document.getElementById('progress-bar').innerText = `${progress}%`;
-                    document.getElementById('status').innerText = `I am ${data.step}, This should just take a moment `;
+                    document.getElementById('status').innerText = `I am ${data.step}, This should just take a moment`;
                 }
             };
 
@@ -236,4 +235,3 @@
     </script>
 </body>
 </html>
-

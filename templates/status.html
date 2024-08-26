@@ -1,11 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Processing Status</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Processed Files</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Processing Completed</h1>
-    <p>Your file is ready: <a href="/download/{{ zip_filename }}">{{ zip_filename }}</a></p>
+    <div class="container">
+        <h1>Your video has been processed!</h1>
+        <p>Click the link below to download the processed frames:</p>
+        <a href="{{ url_for('download_file', filename=zip_filename) }}">Download ZIP file</a>
+    </div>
 </body>
 </html>
-

@@ -60,6 +60,43 @@ button:hover {
     transform: scale(1.05);
 }
 
+.loading-spinner {
+    border: 6px solid rgba(0, 0, 0, 0.1);
+    border-top: 6px solid #f13535;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    display: none;
+    margin: 20px auto;
+}
+
+#progress-container {
+    width: 100%;
+    background-color: #444;
+    border-radius: 5px;
+    height: 30px;
+    margin-top: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+#progress-bar {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #f13535, #ff6347);
+    text-align: center;
+    line-height: 30px;
+    color: white;
+    border-radius: 5px;
+    transition: width 0.3s ease-in-out;
+}
+
+#status {
+    margin-top: 20px;
+    font-size: 1.1em;
+}
+
 /* Keyframe animations */
 @keyframes fadeIn {
     from {
@@ -81,3 +118,32 @@ button:hover {
     }
 }
 
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.overlay .logo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 15%;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+
+    input[type="text"], button {
+        font-size: 1em;
+    }
+}
