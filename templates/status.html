@@ -3,15 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download Processed Files</title>
+    <title>Processing Status</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+        h1 {
+            margin-bottom: 1rem;
+            font-weight: 500;
+            color: #333;
+        }
+        p {
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            color: #555;
+        }
+        a {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+        a:hover {
+            background-color: #0056b3;
+        }
+        .status-message {
+            margin-top: 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Your video has been processed!</h1>
         <p>Click the link below to download the processed frames:</p>
-        <a href="{{ url_for('download_file', filename=zip_filename) }}">Download ZIP file</a>
+        <a href="{{ url_for('download_file', filename=zip_filename) }}" aria-label="Download ZIP file" role="button">Download ZIP file</a>
+        
+        <!-- Status message area -->
+        <div id="status" class="status-message" aria-live="polite">
+            Thank you for using 🦅EYE-SNARE!
+        </div>
     </div>
+
+    <!-- Include the Confetti Script -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <script>
+        // Trigger the confetti when the page loads
+        window.onload = function() {
+            // Basic confetti animation with default settings
+            confetti({
+                particleCount: 200,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            
+            // Optional: For extended celebration, keep firing confetti at intervals
+            let duration = 5 * 1000; // 5 seconds of confetti
+            let end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 7,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#bb0000', '#ffffff']
+                });
+                confetti({
+                    particleCount: 7,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#bb0000', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+        }
+    </script>
 </body>
 </html>
