@@ -4,21 +4,34 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
+    background: url('https://img.freepik.com/free-photo/pile-3d-play-button-logos_1379-880.jpg?ga=GA1.1.1995025016.1724146193&semt=ais_hybrid') no-repeat center center fixed;
+    background-size: cover;
     justify-content: center;
     align-items: center;
     height: 100vh;
     animation: fadeIn 1s ease-in-out;
 }
 
-.container {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    padding: 20px;
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    max-width: 600px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: -1;
+}
+
+.container {
     text-align: center;
-    animation: slideIn 0.5s ease-in-out;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    animation: fadeIn 1s ease-in-out;
+    z-index: 1;
 }
 
 h1 {
@@ -97,6 +110,38 @@ button:hover {
     font-size: 1.1em;
 }
 
+.frames-container {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.frames-container h2 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+#frames {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.frame {
+    width: 150px;
+    height: 100px;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.frame:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
 /* Keyframe animations */
 @keyframes fadeIn {
     from {
@@ -132,6 +177,7 @@ button:hover {
     top: 10px;
     left: 10px;
     width: 15%;
+    animation: fadeIn 2s ease-in-out;
 }
 
 @media (max-width: 600px) {
@@ -145,5 +191,10 @@ button:hover {
 
     input[type="text"], button {
         font-size: 1em;
+    }
+
+    .frame {
+        width: 100px;
+        height: 75px;
     }
 }
