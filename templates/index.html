@@ -4,168 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🦅EYE-SNARE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
     <style>
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #ffffff;
-            background: url('https://img.freepik.com/free-photo/pile-3d-play-button-logos_1379-880.jpg?ga=GA1.1.1995025016.1724146193&semt=ais_hybrid') no-repeat center center fixed;
-            background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .overlay {
+        /* Add styles for the files list container */
+        .file-list-container {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: -1;
+            right: 10px;
+            top: 50px;
+            width: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0);
+            max-height: 400px;
+            overflow-y: auto; /* Allow scrolling if too many files */
         }
 
-        .container {
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            max-width: 500px;
-            width: 90%;
-            animation: fadeIn 1s ease-in-out;
-            z-index: 1;
+        .file-list-container h3 {
+            margin-top: 0;
+            font-size: 18px;
         }
 
-        h1 {
-            font-size: 2.5em;
-            text-align: center;
-            margin-top: 10px;
-            margin-bottom: 50px;
-            color: #feb47b;
-            animation: slideInFromLeft 0.5s ease-in-out;
+        .file-list {
+            list-style: none;
+            padding-left: 0;
         }
 
-        label {
-            display: block;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-            text-align: left;
-            color: #d3d3d3;
+        .file-list li {
+            margin: 5px 0;
         }
 
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 20px;
-            border: none;
-            border-radius: 5px;
-            background-color: #3d3d3d;
-            color: #ffffff;
-            font-size: 1em;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .file-list a {
+            text-decoration: none;
+            color: #1a73e8;
         }
 
-        input[type="text"]:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        .file-list a:hover {
+            text-decoration: underline;
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 25px;
-            background: linear-gradient(135deg, #ff7e5f, #feb47b);
-            color: #ffffff;
-            font-size: 1.2em;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-
-        button:hover {
-            background: linear-gradient(135deg, #feb47b, #ff7e5f);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        #progress-container {
-            width: 100%;
-            background-color: #444;
-            border-radius: 5px;
-            height: 30px;
-            margin-top: 20px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        #progress-bar {
-            width: 0;
-            height: 100%;
-            background: linear-gradient(90deg, #f13535, #ff6347);
-            text-align: center;
-            line-height: 30px;
-            color: white;
-            border-radius: 5px;
-            transition: width 0.3s ease-in-out;
-        }
-
-        #status {
-            margin-top: 20px;
-            font-size: 1.1em;
-        }
-
+        /* Loading Spinner */
         .loading-spinner {
-            border: 6px solid rgba(0, 0, 0, 0.1);
-            border-top: 6px solid #f13535;
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
             border-radius: 50%;
             width: 40px;
             height: 40px;
-            animation: spin 1s linear infinite;
-            display: none;
+            animation: spin 2s linear infinite;
+            display: none; /* Hidden by default */
             margin: 20px auto;
-        }
-
-        .logo {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 15%;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideInFromLeft {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-
-            input[type="text"], button {
-                font-size: 1em;
-            }
         }
     </style>
 </head>
@@ -173,21 +66,38 @@
     <div class="overlay">
         <img src="https://www.een.com/wp-content/uploads/2021/03/EEN-logo-440x150-1.png" alt="Logo" class="logo" id="logo">
     </div>
-    <div class="container">
+    <div class="container" aria-live="polite">
         <h1>🦅 EYE-SNARE</h1>
         <form id="video-form" action="/process" method="post">
             <label for="url">Paste YouTube URL:</label>
-            <input type="text" id="url" name="url" required>
+            <input type="text" id="url" name="url" required aria-required="true" aria-label="YouTube video URL">
             <button type="submit">Extract</button>
         </form>
-        <div id="progress-container">
-            <div id="progress-bar">0%</div>
+
+        <!-- Progress Bar Section -->
+        <div id="progress-container" aria-live="polite">
+            <div id="progress-bar">0%</            </div>
         </div>
-        <div id="status"></div>
-        <div class="loading-spinner" id="loading-spinner"></div>
+
+        <!-- Status Section -->
+        <div id="status" aria-live="polite"></div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loading-spinner" aria-hidden="true"></div>
+    </div>
+
+    <!-- List of downloaded files -->
+    <div class="file-list-container">
+        <h3>Extracted Files</h3>
+        <ul id="file-list" class="file-list">
+            <!-- Files will be dynamically added here -->
+        </ul>
+        <button id="clear-files" style="margin-top: 10px; display: none;">Clear Files</button> <!-- Button to clear the file list -->
     </div>
 
     <script>
+        let fileCount = 0;  // Initialize file count
+
         document.getElementById('video-form').addEventListener('submit', function(event) {
             event.preventDefault();
             let url = document.getElementById('url').value;
@@ -205,32 +115,87 @@
                   console.log('Processing started');
               });
 
+            // Set up Server-Sent Events for progress updates
             let eventSource = new EventSource('/progress');
             eventSource.onmessage = function(event) {
                 let data = JSON.parse(event.data);
+                
+                // Check for status updates
                 if (data.status === 'Completed') {
                     document.getElementById('loading-spinner').style.display = 'none';
                     document.getElementById('progress-bar').style.width = '100%';
                     document.getElementById('progress-bar').innerText = '100%';
                     document.getElementById('status').innerHTML = `Finished Extraction. <a href="/download/${encodeURIComponent(data.file)}">Download your file</a>`;
-                    document.getElementById('logo').style.display = 'block'; // Show logo
-                    eventSource.close();
+                    document.getElementById('logo').style.display = 'block'; // Show logo upon completion
+                    eventSource.close(); // Close the connection once completed
+
+                    // Trigger confetti animation
+                    confetti({
+                        particleCount: 200,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                    
+                    // Optional: For extended celebration, keep firing confetti at intervals
+                    let duration = 5 * 1000; // 5 seconds of confetti
+                    let end = Date.now() + duration;
+
+                    (function frame() {
+                        confetti({
+                            particleCount: 7,
+                            angle: 60,
+                            spread: 55,
+                            origin: { x: 0 },
+                            colors: ['#bb0000', '#ffffff']
+                        });
+                        confetti({
+                            particleCount: 7,
+                            angle: 120,
+                            spread: 55,
+                            origin: { x: 1 },
+                            colors: ['#bb0000', '#ffffff']
+                        });
+
+                        if (Date.now() < end) {
+                            requestAnimationFrame(frame);
+                        }
+                    }());
+
+                    // Append the completed file to the downloaded files list with numbering
+                    fileCount++;
+                    const fileList = document.getElementById('file-list');
+                    const newFile = document.createElement('li');
+                    newFile.innerHTML = `${fileCount}. <a href="/download/${encodeURIComponent(data.file)}">${data.file}</a>`;
+                    fileList.appendChild(newFile);
+                    document.getElementById('clear-files').style.display = 'block'; // Show clear button
+
                 } else if (data.status === 'Failed') {
                     document.getElementById('loading-spinner').style.display = 'none';
                     document.getElementById('status').innerText = 'Processing failed. Please try again or check the URL.';
                     eventSource.close();
                 } else {
+                    // Update progress bar and status
                     let progress = data.progress || 0;
                     document.getElementById('progress-bar').style.width = `${progress}%`;
                     document.getElementById('progress-bar').innerText = `${progress}%`;
-                    document.getElementById('status').innerText = `I am ${data.step}, This should just take a moment`;
+                    document.getElementById('status').innerText = `Currently ${data.step}. Please wait a moment.`;
                 }
             };
 
+            // Error handling for SSE
             eventSource.onerror = function(error) {
                 console.log('SSE error:', error);
+                document.getElementById('loading-spinner').style.display = 'none';
+                document.getElementById('status').innerText = 'Error occurred. Please try again.';
                 eventSource.close();
             };
+        });
+
+        // Clear the file list when the button is clicked
+        document.getElementById('clear-files').addEventListener('click', function() {
+            document.getElementById('file-list').innerHTML = '';
+            fileCount = 0;
+            document.getElementById('clear-files').style.display = 'none'; // Hide the clear button
         });
     </script>
 </body>
