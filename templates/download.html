@@ -38,7 +38,7 @@
         }
         a {
             display: inline-block;
-            background-color: #28a745;
+            background-color: #007bff;
             color: white;
             padding: 10px 20px;
             border-radius: 4px;
@@ -47,7 +47,7 @@
             transition: background-color 0.3s ease;
         }
         a:hover {
-            background-color: #218838;
+            background-color: #0056b3;
         }
     </style>
 </head>
@@ -55,7 +55,8 @@
     <div class="container">
         <h1>Your video has been processed!</h1>
         <p>Click the link below to download the processed frames:</p>
-        <a href="{{ url_for('download_file', filename=zip_filename) }}">Download ZIP file</a>
+        <a href="{{ url_for('download_file', filename=zip_filename) }}" aria-label="Download ZIP file">Download ZIP file</a>
+        id="status" aria-live="polite"
     </div>
 </body>
 </html>
