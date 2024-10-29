@@ -1,5 +1,7 @@
 import os
 import re
+import random
+import string
 import cv2
 import yt_dlp as youtube_dl
 import shutil
@@ -51,7 +53,7 @@ def extract_frames(video_path, output_folder, interval_ms):
 
         if frame_count % interval_frames == 0:
             frame_filename = os.path.join(output_folder, f"frame_{saved_frame_count:04d}.jpg")
-            cv2.imwrite(frame_filename, frame)
+            cv2.imwrite(frame_filename, frame, [cv2.IMWRITE_JPEG_QUALITY, 95])
             saved_frame_count += 1
 
         frame_count += 1
@@ -64,6 +66,9 @@ def extract_frames(video_path, output_folder, interval_ms):
 
 def download_youtube_video(url, output_path):
     try:
+        # Path to your exported cookies file
+        cookie_file = '/home/een/Documents/cookies.txt'
+        
         with youtube_dl.YoutubeDL({'quiet': True}) as ydl:
             info_dict = ydl.extract_info(url, download=False)
             original_title = info_dict['title']
@@ -74,6 +79,7 @@ def download_youtube_video(url, output_path):
                 'outtmpl': os.path.join(output_path, f'{sanitized_title}.%(ext)s'),
                 'merge_output_format': 'mp4',
                 'noplaylist': True,
+                'cookiefile': cookie_file  # Add cookiefile for authentication
             }
             
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -85,33 +91,30 @@ def download_youtube_video(url, output_path):
         logging.error(f"Error downloading video: {e}")
         return None, None
 
+
 def zip_folder(folder_path):
     zip_filename = f"{folder_path}.zip"
     shutil.make_archive(folder_path, 'zip', folder_path)
     logging.info(f"Created zip archive: {zip_filename}")
 
+def generate_random_name(extension="jpg"):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=8)) + f".{extension}"
+    
 def rename_files_in_folder(folder_path):
     if not os.path.isdir(folder_path):
         logging.error(f"Error: The folder {folder_path} does not exist.")
         return
-    
-    parent_folder_name = os.path.basename(folder_path)
-    if not parent_folder_name:
-        logging.error("Error: The folder name is empty.")
-        return
-
-    prefix = ''.join([word[0] for word in parent_folder_name.split()])
 
     for file_name in os.listdir(folder_path):
         old_file_path = os.path.join(folder_path, file_name)
         if os.path.isdir(old_file_path):
             continue
-        
-        new_file_name = f"{prefix}_{file_name}"
+
+        new_file_name = generate_random_name(extension="jpg")
         new_file_path = os.path.join(folder_path, new_file_name)
         os.rename(old_file_path, new_file_path)
 
-    logging.info(f"Files in {folder_path} renamed successfully.")
+    logging.info(f"Files in {folder_path} renamed with random names successfully.")
 
 @app.route('/')
 def home():
@@ -131,39 +134,44 @@ def process_video():
     video_path = None
 
     try:
-        # Download video
+        # Step 1: Download video
+        processing_status['step'] = 'Downloading Video'
+        processing_status['progress'] = 10
         video_path, sanitized_title = download_youtube_video(youtube_url, download_path)
         if not video_path or not os.path.exists(video_path):
             processing_status['status'] = 'Failed'
-            processing_status['step'] = 'Downloading Video'
             return "Video download failed or file not found."
 
+        # Step 2: Extract frames
         processing_status['step'] = 'Extracting Frames'
-        processing_status['progress'] = 0
+        processing_status['progress'] = 30
         output_folder = os.path.join(frame_download_path, sanitized_title)
-
-        # Extract frames
-        if not extract_frames(video_path, output_folder, 1000):
+        if not extract_frames(video_path, output_folder, 500):
             processing_status['status'] = 'Failed'
-            processing_status['step'] = 'Extracting Frames'
             return "Frame extraction failed."
 
+        # Step 3: Rename frames with random names
+        processing_status['step'] = 'Renaming Files'
+        processing_status['progress'] = 50
         rename_files_in_folder(output_folder)
 
-        # Delete video file
-        os.remove(video_path)
-
+        # Step 4: Create ZIP archive
         processing_status['step'] = 'Creating ZIP Archive'
-        processing_status['progress'] = 0
+        processing_status['progress'] = 70
         zip_folder(output_folder)
 
-        # Delete frames folder after zipping
+        # Step 5: Clean up and finish
+        processing_status['step'] = 'Cleaning Up'
+        processing_status['progress'] = 90
+        os.remove(video_path)
         shutil.rmtree(output_folder)
 
+        # Final step
         processing_status['status'] = 'Completed'
+        processing_status['step'] = 'Done'
+        processing_status['progress'] = 100
         processing_status['file'] = f"{sanitized_title}.zip"
-        
-        # URL encode the filename for safe URL usage
+
         safe_filename = urllib.parse.quote(processing_status['file'])
         return render_template('status.html', zip_filename=safe_filename)
 
@@ -172,6 +180,7 @@ def process_video():
         processing_status['step'] = 'Error'
         logging.error(f"Unexpected error: {e}")
         return "An unexpected error occurred."
+
 
 @app.route('/status')
 def status():
@@ -183,8 +192,9 @@ def progress():
         while True:
             with app.app_context():
                 yield f"data: {json.dumps(processing_status)}\n\n"
-            time.sleep(2)  # Adjust the interval as needed
+            time.sleep(1)  # Real-time update every 1 second
     return Response(generate(), mimetype='text/event-stream')
+
 
 @app.route('/download/<filename>')
 def download_file(filename):
