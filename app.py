@@ -14,6 +14,13 @@ from werkzeug.utils import safe_join
 
 app = Flask(__name__)
 
+# Directories for static content
+download_path = os.path.join(app.root_path, 'static', 'YT-Downloads', 'AV_files')
+frame_download_path = os.path.join(app.root_path, 'static', 'YT-Downloads', 'Extracts')
+
+os.makedirs(download_path, exist_ok=True)
+os.makedirs(frame_download_path, exist_ok=True)
+
 # Global variable to keep track of processing status
 processing_status = {
     'status': 'Idle',
@@ -67,7 +74,7 @@ def extract_frames(video_path, output_folder, interval_ms):
 def download_youtube_video(url, output_path):
     try:
         # Path to your exported cookies file
-        cookie_file = '/home/een/Documents/cookies.txt'
+        cookie_file = os.path.join(app.root_path, 'cookies.txt')
         
         with youtube_dl.YoutubeDL({'quiet': True}) as ydl:
             info_dict = ydl.extract_info(url, download=False)
@@ -90,7 +97,6 @@ def download_youtube_video(url, output_path):
     except Exception as e:
         logging.error(f"Error downloading video: {e}")
         return None, None
-
 
 def zip_folder(folder_path):
     zip_filename = f"{folder_path}.zip"
@@ -128,8 +134,6 @@ def process_video():
     processing_status['progress'] = 0
 
     youtube_url = request.form['url']
-    download_path = '/home/een/Downloads/YT-Downloads/AV_files'
-    frame_download_path = '/home/een/Downloads/YT-Downloads/Extracts'
     sanitized_title = None
     video_path = None
 
@@ -200,7 +204,7 @@ def progress():
 def download_file(filename):
     try:
         # Safe join to ensure the file path is safe and correctly handled
-        file_path = safe_join('/home/een/Downloads/YT-Downloads/Extracts', filename)
+        file_path = safe_join(frame_download_path, filename)
         return send_file(file_path, as_attachment=True)
     except FileNotFoundError:
         return "File not found.", 404
