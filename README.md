@@ -30,4 +30,3 @@
 - Flask
 - yt-dlp
 - OpenCV
-- etc.
