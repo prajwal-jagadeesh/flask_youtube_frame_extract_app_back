@@ -15,8 +15,8 @@ from werkzeug.utils import safe_join
 app = Flask(__name__)
 
 # Directories for static content
-download_path = os.path.join(app.root_path, 'static', 'YT-Downloads', 'AV_files')
-frame_download_path = os.path.join(app.root_path, 'static', 'YT-Downloads', 'Extracts')
+download_path = os.path.join(app.root_path, 'static', 'YT-Extracts')
+frame_download_path = os.path.join(app.root_path, 'static', 'YT-Extracts')
 
 os.makedirs(download_path, exist_ok=True)
 os.makedirs(frame_download_path, exist_ok=True)
