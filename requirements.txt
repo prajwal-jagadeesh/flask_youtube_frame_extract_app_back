@@ -1,4 +1,11 @@
-Flask==2.2.5
-werkzeug==2.2.3
-yt-dlp==2023.03.04
-opencv-python-headless==4.8.0.74
+Flask==3.0.2
+Jinja2==3.1.2
+numpy==1.26.4
+pillow==10.2.0
+requests==2.31.0
+setuptools==68.1.2
+simplejson==3.19.2
+Werkzeug==3.0.1
+wheel==0.42.0
+yt-dlp==2024.4.9
+zipp==1.0.0
